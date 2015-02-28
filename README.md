@@ -23,7 +23,7 @@
 * is_base_tweet               -   Tweet startet Dialog (ist keine Antwort!)
 
 * is_question                 -   Tweet ist eine Frage (muss aber keine Antworten haben)
-* question_mark_counter       -   Number of Questionmarks
+* question_mark               -   Tweet enthält ein Fragezeichen
 * is_wh_question              -   Ist eine W-Frage oder nicht
 
 Abschließend: Alle Tweets löschen, die nicht Frage sind, Base-Tweet oder Antwort.
