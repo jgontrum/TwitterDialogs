@@ -4,8 +4,8 @@ __author__ = 'Johannes Gontrum <gontrum@vogelschwarm.com>'
 import ConfigParser
 import itertools
 import MySQLdb
-
-
+import MySQLdb.cursors
+import sys
 # <editor-fold desc="SQL Connect">
 # Read in config:
 config = ConfigParser.RawConfigParser()
@@ -15,43 +15,21 @@ dbHostDB = config.get('MySQL', 'mySQLHost')
 dbUser = config.get('MySQL', 'mySQLUser')
 dbPassword = config.get('MySQL', 'mySQLPassword')
 dbTable = config.get('MySQL', 'mySQLTablePrefix')
-dbTable = "testDB"
 dbHost = dbHostDB[:dbHostDB.find("/")]
 dbDB = dbHostDB[dbHostDB.find("/") + 1:]
 
 # Connect to database
 connection = MySQLdb.connect(host = dbHost, user = dbUser, passwd = dbPassword, db = dbDB)
-connection.autocommit(False)
-dbCursor = connection.cursor()
 
-connectionInsert = MySQLdb.connect(host=dbHost, user=dbUser, passwd=dbPassword, db=dbDB)
-connectionInsert.autocommit(True)
-insertCursor = connectionInsert.cursor()
+# Create a server sided cursor: http://stackoverflow.com/a/3788777/4587312
+readCursor = connection.cursor(MySQLdb.cursors.SSCursor)
+insertCursor = connection.cursor()
+
 # </editor-fold>
 
 # <editor-fold desc="Read DB content">
 """ Read MySQL database in chunks """
-dbCursor.execute('SELECT COUNT(*) FROM ' + dbTable)
-max_rows = float(dbCursor.fetchone()[0])
-
-current_top_row = 0
-step_fetch = 500
-
-def getNextDBChunk ():
-    global current_top_row
-    global step_fetch
-    global max_rows
-    global dbCursor
-    if current_top_row > max_rows:
-        print "Finished!"
-        return None
-    dbCursor.execute(
-        'SELECT id, in_reply_to_status_id FROM ' + dbTable + ' WHERE in_reply_to_status_id > 0 ORDER BY created_at DESC LIMIT ' + str(
-            current_top_row) + ',' + str(step_fetch))
-    rp = dbCursor.fetchall()
-    print "[DEBUG] Returning range from", current_top_row, "to", (current_top_row + step_fetch)
-    current_top_row += step_fetch
-    return rp
+readCursor.execute('SELECT id, in_reply_to_status_id FROM ' + dbTable + ' WHERE in_reply_to_status_id > 0')
 # </editor-fold>
 
 # <editor-fold desc="Create datastructures">
@@ -59,12 +37,10 @@ def getNextDBChunk ():
 direct_replies = {}
 
 # Fill the dictionary with values from the DB
-while True:
-    rp = getNextDBChunk()
-    if rp == None:
-        break
-    for tweetid, reply_to in rp:
-        direct_replies.setdefault(reply_to, []).append(tweetid)
+for tweetid, reply_to in readCursor:
+    direct_replies.setdefault(reply_to, []).append(tweetid)
+
+sys.exit()
 
 # Base tweets = tweets that are the root of a conversation tree.
 # A tweet is a base tweet iff there are tweets that reply to it and the base tweet is not a reply.
@@ -137,7 +113,6 @@ for id, replies in direct_replies.iteritems():
 
         print insert_query
         insertCursor.execute(insert_query)
-        connectionInsert.commit()
         insert_id_list = []
         insert_count = 0
         insert_query = None
@@ -169,7 +144,6 @@ for id, replies in indirect_replies.iteritems():
 
         print insert_query
         insertCursor.execute(insert_query)
-        connectionInsert.commit()
         insert_id_list = []
         insert_count = 0
         insert_query = None
@@ -196,7 +170,6 @@ for length, ids in direct_counter.iteritems():
 
         print insert_query
         insertCursor.execute(insert_query)
-        connectionInsert.commit()
 
 # Set counter for indirect replies
 max_list_size = 1000
@@ -208,7 +181,6 @@ for length, ids in indirect_counter.iteritems():
 
         print insert_query
         insertCursor.execute(insert_query)
-        connectionInsert.commit()
 # </editor-fold>
 
 # Base ids:
@@ -220,4 +192,3 @@ for sub_list in list_split(list(base_tweets), max_list_size):
 
     print insert_query
     insertCursor.execute(insert_query)
-    connectionInsert.commit()
