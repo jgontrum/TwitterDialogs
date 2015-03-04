@@ -2,7 +2,6 @@
 # !/usr/bin/env python
 __author__ = 'Johannes Gontrum <gontrum@vogelschwarm.com>'
 import ConfigParser
-import itertools
 import MySQLdb
 import MySQLdb.cursors
 import sys
@@ -40,7 +39,7 @@ reply_list = []
 
 # Fill the dictionary with values from the DB
 for tweetid, reply_to in readCursor:
-    direct_replies.setdefault(reply_to, []).append(tweetid)
+    direct_replies.setdefault(reply_to, set()).add(tweetid)
     reply_list.append(tweetid)
 
 print "[INFO] Creating a set from a list (replies)..."
@@ -64,11 +63,11 @@ print "[INFO] Generating indirect replies..."
 # Find indirect replies.
 # Map tweets to a list of their indirect replies, including the id of the tweet itself.
 indirect_replies = {}
-
+key_set = set(direct_replies.keys())
 # Recursive function. Returns a list of all tweet ids that are id or subordinated to it in the tree.
 def find_replies_rec (id):
     ret = [id]
-    if id in direct_replies.keys():
+    if id in key_set:
         for reply in direct_replies[id]:
             ret += find_replies_rec(reply)
     indirect_replies[id] = ret
