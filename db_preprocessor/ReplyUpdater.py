@@ -27,6 +27,7 @@ insertCursor = connection.cursor()
 
 # </editor-fold>
 
+print "[INFO] Loading rows from database..."
 # <editor-fold desc="Read DB content">
 """ Read MySQL database in chunks """
 readCursor.execute('SELECT id, in_reply_to_status_id FROM ' + dbTable + ' WHERE in_reply_to_status_id > 0')
@@ -35,18 +36,30 @@ readCursor.execute('SELECT id, in_reply_to_status_id FROM ' + dbTable + ' WHERE 
 # <editor-fold desc="Create datastructures">
 # Map tweet ids to a list of their replies.
 direct_replies = {}
+reply_list = []
 
 # Fill the dictionary with values from the DB
 for tweetid, reply_to in readCursor:
     direct_replies.setdefault(reply_to, []).append(tweetid)
+    reply_list.append(tweetid)
 
-sys.exit()
+print "[INFO] Creating a set from a list (replies)..."
+reply_set = set(reply_list)
+reply_list = []
+print "[INFO] Finding base tweets..."
 
 # Base tweets = tweets that are the root of a conversation tree.
 # A tweet is a base tweet iff there are tweets that reply to it and the base tweet is not a reply.
 # The base tweets are found by creating the difference between the set of tweets that have tweets replying to them
 #  (keys of the dict) and the set of tweets that reply to other tweets.
-base_tweets = set(direct_replies.keys()).difference(set(itertools.chain.from_iterable(direct_replies.values())))
+# base_tweets = set(direct_replies.keys()).difference(set(itertools.chain.from_iterable(direct_replies.values())))
+
+base_tweets = []
+for key in direct_replies.iterkeys():
+    if key not in reply_set:
+        base_tweets.append(key)
+
+print "[INFO] Generating indirect replies..."
 
 # Find indirect replies.
 # Map tweets to a list of their indirect replies, including the id of the tweet itself.
@@ -64,6 +77,8 @@ def find_replies_rec (id):
 # Iterate over all root nodes
 for tweet in base_tweets:
     find_replies_rec(tweet)
+
+print "[INFO] Creating counters..."
 
 # Key: counts, value: list of ids
 direct_counter = {}
@@ -87,10 +102,13 @@ def list_to_string (lst):
         ret += "\"" + str(l) + "\","
     return ret[:-1]
 
+
+print "[INFO] Adding direct replies to database..."
+
 # <editor-fold desc="Add direct replies">
 # Add to DB
 # See: http://blog.bubble.ro/how-to-make-multiple-updates-using-a-single-query-in-mysql/
-insert_step = 500
+insert_step = 1000
 insert_count = 0
 insert_query = None
 insert_id_list = []
@@ -118,10 +136,12 @@ for id, replies in direct_replies.iteritems():
         insert_query = None
 # </editor-fold>
 
+print "[INFO] Adding indirect replies to database..."
+
 # <editor-fold desc="Add indirect replies">
 # Add to DB
 # See: http://blog.bubble.ro/how-to-make-multiple-updates-using-a-single-query-in-mysql/
-insert_step = 500
+insert_step = 1000
 insert_count = 0
 insert_query = None
 insert_id_list = []
@@ -148,6 +168,7 @@ for id, replies in indirect_replies.iteritems():
         insert_count = 0
         insert_query = None
 # </editor-fold>
+print "[INFO] Adding counters to database..."
 
 # <editor-fold desc="Set Counters">
 # from http://stackoverflow.com/a/23148997/4587312
@@ -182,6 +203,7 @@ for length, ids in indirect_counter.iteritems():
         print insert_query
         insertCursor.execute(insert_query)
 # </editor-fold>
+print "[INFO] Marking base tweets in the database..."
 
 # Base ids:
 max_list_size = 1000
