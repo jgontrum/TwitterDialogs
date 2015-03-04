@@ -107,7 +107,7 @@ print "[INFO] Adding direct replies to database..."
 # <editor-fold desc="Add direct replies">
 # Add to DB
 # See: http://blog.bubble.ro/how-to-make-multiple-updates-using-a-single-query-in-mysql/
-insert_step = 1000
+insert_step = 20000
 insert_count = 0
 insert_query = None
 insert_id_list = []
@@ -139,7 +139,7 @@ print "[INFO] Adding indirect replies to database..."
 # <editor-fold desc="Add indirect replies">
 # Add to DB
 # See: http://blog.bubble.ro/how-to-make-multiple-updates-using-a-single-query-in-mysql/
-insert_step = 1000
+insert_step = 20000
 insert_count = 0
 insert_query = None
 insert_id_list = []
@@ -179,7 +179,7 @@ def list_split (arr, size):
     return arrs
 
 # Set counter for direct replies
-max_list_size = 1000
+max_list_size = 20000
 for length, ids in direct_counter.iteritems():
     for sub_lists in list_split(ids, max_list_size):
         insert_query = "UPDATE `" + dbTable + "` SET `direct_replies_count` = " + str(length) + " WHERE id IN ("
@@ -189,7 +189,7 @@ for length, ids in direct_counter.iteritems():
         insertCursor.execute(insert_query)
 
 # Set counter for indirect replies
-max_list_size = 1000
+max_list_size = 20000
 for length, ids in indirect_counter.iteritems():
     for sub_lists in list_split(ids, max_list_size):
         insert_query = "UPDATE `" + dbTable + "` SET `indirect_replies_count` = " + str(length) + " WHERE id IN ("
@@ -201,7 +201,7 @@ for length, ids in indirect_counter.iteritems():
 print "[INFO] Marking base tweets in the database..."
 
 # Base ids:
-max_list_size = 1000
+max_list_size = 20000
 for sub_list in list_split(list(base_tweets), max_list_size):
     insert_query = "UPDATE `" + dbTable + "` SET `is_base_tweet` = 1 WHERE id IN ("
     insert_query += ",".join([str(i) for i in sub_list])
