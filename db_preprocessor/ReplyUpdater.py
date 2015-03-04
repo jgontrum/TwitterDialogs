@@ -128,7 +128,6 @@ for id, replies in direct_replies.iteritems():
         insert_query += ",".join(insert_id_list)
         insert_query += ");"
 
-        print insert_query
         insertCursor.execute(insert_query)
         insert_id_list = []
         insert_count = 0
@@ -161,7 +160,6 @@ for id, replies in indirect_replies.iteritems():
         insert_query += ",".join(insert_id_list)
         insert_query += ");"
 
-        print insert_query
         insertCursor.execute(insert_query)
         insert_id_list = []
         insert_count = 0
@@ -188,7 +186,6 @@ for length, ids in direct_counter.iteritems():
         insert_query += ",".join(sub_lists)
         insert_query += ");"
 
-        print insert_query
         insertCursor.execute(insert_query)
 
 # Set counter for indirect replies
@@ -199,7 +196,6 @@ for length, ids in indirect_counter.iteritems():
         insert_query += ",".join(sub_lists)
         insert_query += ");"
 
-        print insert_query
         insertCursor.execute(insert_query)
 # </editor-fold>
 print "[INFO] Marking base tweets in the database..."
@@ -211,5 +207,4 @@ for sub_list in list_split(list(base_tweets), max_list_size):
     insert_query += ",".join([str(i) for i in sub_list])
     insert_query += ");"
 
-    print insert_query
     insertCursor.execute(insert_query)
