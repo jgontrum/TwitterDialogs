@@ -19,10 +19,12 @@ dbDB = dbHostDB[dbHostDB.find("/") + 1:]
 
 # Connect to database
 connection = MySQLdb.connect(host = dbHost, user = dbUser, passwd = dbPassword, db = dbDB)
+connection2 = MySQLdb.connect(host = dbHost, user = dbUser, passwd = dbPassword, db = dbDB)
+connection2.autocommit(True)
 
 # Create a server sided cursor: http://stackoverflow.com/a/3788777/4587312
 readCursor = connection.cursor(MySQLdb.cursors.SSCursor)
-insertCursor = connection.cursor()
+insertCursor = connection2.cursor()
 
 # </editor-fold>
 
@@ -101,8 +103,35 @@ def list_to_string (lst):
         ret += "\"" + str(l) + "\","
     return ret[:-1]
 
+# from http://stackoverflow.com/a/23148997/4587312
+def list_split (arr, size):
+    arrs = []
+    while len(arr) > size:
+        pice = arr[:size]
+        arrs.append(pice)
+        arr = arr[size:]
+    arrs.append(arr)
+    return arrs
 
-print "[INFO] Adding direct replies to database..."
+print "[INFO] Marking base tweets in the database..."
+
+log = open('q.log','w')
+# Base ids:
+max_list_size = 5000
+for sub_list in list_split(list(base_tweets), max_list_size):
+    insert_query = "UPDATE `" + dbTable + "` SET `is_base_tweet` = 1 WHERE id IN ("
+    insert_query += ",".join([str(i) for i in sub_list])
+    insert_query += ");"
+    
+    log.write(insert_query + "\n")
+
+    sys.stdout.write('* ')
+    sys.stdout.flush()
+    insertCursor.execute(insert_query)
+
+
+
+print "\n[INFO] Adding direct replies to database..."
 
 # <editor-fold desc="Add direct replies">
 # Add to DB
@@ -128,13 +157,15 @@ for id, replies in direct_replies.iteritems():
         insert_query += ",".join(insert_id_list)
         insert_query += ");"
 
+        sys.stdout.write('* ')
+        sys.stdout.flush()
         insertCursor.execute(insert_query)
         insert_id_list = []
         insert_count = 0
         insert_query = None
 # </editor-fold>
 
-print "[INFO] Adding indirect replies to database..."
+print "\n[INFO] Adding indirect replies to database..."
 
 # <editor-fold desc="Add indirect replies">
 # Add to DB
@@ -160,23 +191,16 @@ for id, replies in indirect_replies.iteritems():
         insert_query += ",".join(insert_id_list)
         insert_query += ");"
 
+        sys.stdout.write('* ')
+        sys.stdout.flush()
         insertCursor.execute(insert_query)
         insert_id_list = []
         insert_count = 0
         insert_query = None
 # </editor-fold>
-print "[INFO] Adding counters to database..."
+print "\n[INFO] Adding counters to database..."
 
 # <editor-fold desc="Set Counters">
-# from http://stackoverflow.com/a/23148997/4587312
-def list_split (arr, size):
-    arrs = []
-    while len(arr) > size:
-        pice = arr[:size]
-        arrs.append(pice)
-        arr = arr[size:]
-    arrs.append(arr)
-    return arrs
 
 # Set counter for direct replies
 max_list_size = 20000
@@ -186,6 +210,8 @@ for length, ids in direct_counter.iteritems():
         insert_query += ",".join(sub_lists)
         insert_query += ");"
 
+        sys.stdout.write('* ')
+        sys.stdout.flush()
         insertCursor.execute(insert_query)
 
 # Set counter for indirect replies
@@ -196,15 +222,8 @@ for length, ids in indirect_counter.iteritems():
         insert_query += ",".join(sub_lists)
         insert_query += ");"
 
+        sys.stdout.write('* ')
+        sys.stdout.flush()
         insertCursor.execute(insert_query)
+print "\n"
 # </editor-fold>
-print "[INFO] Marking base tweets in the database..."
-
-# Base ids:
-max_list_size = 20000
-for sub_list in list_split(list(base_tweets), max_list_size):
-    insert_query = "UPDATE `" + dbTable + "` SET `is_base_tweet` = 1 WHERE id IN ("
-    insert_query += ",".join([str(i) for i in sub_list])
-    insert_query += ");"
-
-    insertCursor.execute(insert_query)
