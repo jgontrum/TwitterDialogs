@@ -15,7 +15,6 @@ dbHostDB = config.get('MySQL', 'mySQLHost')
 dbUser = config.get('MySQL', 'mySQLUser')
 dbPassword = config.get('MySQL', 'mySQLPassword')
 dbTable = config.get('MySQL', 'mySQLTablePrefix')
-dbTable = "testDB"
 dbHost = dbHostDB[:dbHostDB.find("/")]
 dbDB = dbHostDB[dbHostDB.find("/") + 1:]
 
@@ -25,19 +24,24 @@ connectionInsert.autocommit(True)
 insertCursor = connectionInsert.cursor()
 # </editor-fold>
 
+#print "Finding questionmarks"
 # http://dev.mysql.com/doc/refman/5.1/en/regexp.html
 # Set question_mark = 1 IF a '?' is found:
-regex = ".+[[.question-mark.]].*"
-insertCursor.execute(
-    "UPDATE `" + dbTable + "` SET `question_mark` = 1 WHERE `id` IN ( SELECT * FROM ( SELECT `id` FROM `" + dbTable + "` WHERE `text` RLIKE '" + regex + "' ) tblTmp )")
-connectionInsert.commit()
+#insertCursor.execute(
+#    'UPDATE `" + dbTable + "` SET `question_mark` = 1 WHERE `text` LIKE "%?%"')
+#connectionInsert.commit()
 
+print "Find wh-questions"
 # Set is_wh_question = 1 IF it contains a word that marks a question
-regex2 = ".*(was|wie|warum)[[:blank:]].*"
+keywords = ["wer","welche","welcher","wen","wem","welchen","welchem","was","welches","warum","weshalb","weswegen","wieso","wozu","womit","wodurch","wo","wohin","woher","woran","worin","worauf","worunter","wovor","wohinter","wann"]
+
+print "UPDATE `" + dbTable + "` SET `is_wh_question` = 1 WHERE `text` REGEXP '[[:<:]](" + "|".join(keywords) +  ")[[:>:]]'"
+# create query (text begins with the word or is BLANK+WORD+BLANK to avoid partial matches:
 insertCursor.execute(
-    "UPDATE `" + dbTable + "` SET `is_wh_question` = 1 WHERE `id` IN ( SELECT * FROM ( SELECT `id` FROM `" + dbTable + "` LOWER(`text`) RLIKE '" + regex2 + "' ) tblTmp )")
+    "UPDATE `" + dbTable + "` SET `is_wh_question` = 1 WHERE `text` REGEXP '[[:<:]](" + "|".join(keywords) +  ")[[:>:]]'") 
 connectionInsert.commit()
 
+print "Set is_question"
 # Set is_question
 insertCursor.execute(
     "UPDATE `" + dbTable + "` SET `is_question` = 1 WHERE `is_wh_question` = 1 OR `question_mark` = 1")
