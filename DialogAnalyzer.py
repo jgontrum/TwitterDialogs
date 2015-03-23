@@ -3,6 +3,7 @@
 __author__ = 'Johannes Gontrum <gontrum@vogelschwarm.com>'
 
 from graphviz import Digraph
+import cPickle as pickle
 import itertools
 from DialogContainer import DialogContainer
 
@@ -20,7 +21,7 @@ class DialogAnalyzer:
                 ret += self.__r_draw(child)
         return ret
 
-    def draw(self, root, filename): #!!
+    def draw(self, root, filename):
         dot = Digraph(format = 'pdf')
         for parent, child in self.__r_draw(root):
             dot.edge(str(parent), str(child))
@@ -58,6 +59,13 @@ class DialogAnalyzer:
             return 0
 
 
+##Steve: AllDialogs-DialogContainer.bin can be found on daphne in /tmp/AllDialogs-DialogContainer.bin
+##Remember to use cPickle instead of pickle.
+if __name__ == '__main__':
+    dialog_container = pickle.load(open("AllDialogs-DialogContainer.bin", "rb"))
+    analyzer = DialogAnalyzer(dialog_container)
+    print analyzer.roots[0]
+    analyzer.draw(analyzer.roots[0],"/Users/johannes/Desktop/1")
 
 
 #
@@ -87,4 +95,4 @@ class DialogAnalyzer:
 #         4   5
 #         |
 #         6
-# """6
+# """
