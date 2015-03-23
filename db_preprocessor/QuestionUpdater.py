@@ -31,9 +31,14 @@ insertCursor = connectionInsert.cursor()
 #    'UPDATE `" + dbTable + "` SET `question_mark` = 1 WHERE `text` LIKE "%?%"')
 #connectionInsert.commit()
 
+insertCursor.execute('UPDATE `' + dbTable + '` SET `is_wh_question` = 0')
+connectionInsert.commit()
+insertCursor.execute('UPDATE `' + dbTable + '` SET `is_question` = 0')
+connectionInsert.commit()
+
 print "Find wh-questions"
 # Set is_wh_question = 1 IF it contains a word that marks a question
-keywords = ["wer","welche","welcher","wen","wem","welchen","welchem","was","welches","warum","weshalb","weswegen","wieso","wozu","womit","wodurch","wo","wohin","woher","woran","worin","worauf","worunter","wovor","wohinter","wann"]
+keywords = ["wer","wen","wem","warum","weshalb","weswegen","wieso","wozu","wodurch","wohin","woher","woran","worin","worauf","worunter","wovor","wohinter","wann"]
 
 print "UPDATE `" + dbTable + "` SET `is_wh_question` = 1 WHERE `text` REGEXP '[[:<:]](" + "|".join(keywords) +  ")[[:>:]]'"
 # create query (text begins with the word or is BLANK+WORD+BLANK to avoid partial matches:
