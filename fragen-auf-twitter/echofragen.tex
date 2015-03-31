@@ -1,0 +1,64 @@
+\documentclass[main.tex]{subfiles} 
+\begin{document}
+\section{Echofragen}
+
+Twitter ist ein junges und dynamisches Medium. Seine Entstehungsgeschichte spielt sich mit dem Jahr 2006 in einer Zeit ab, als bestimme Termini der Internetsprache sich bereits verfestigt hatten. So ist die Verwendung des $@$-Symbols übernommen worden aus der Email-Domäne. Ein anderes Symbol -- das \#-Zeichen -- ist von Twitter selbst prominent gemacht worden. Aus linguistischer Sicht interessant ist dabei, dass diese Symbole nicht dem bisher gebräuchlichem Kanon geschriebener Sprache angehörten. Stattdessen zeigt sich ein kreativer Umgang mit Sprache, der zum Einen den gewohnten soziolinguistischen Motivationen der User geschuldet ist, zum Anderen aber schlicht durch die technischen Anforderungen erzwungen werden. So führt die Begrenzung auf 140 Zeichen zu einer stetigen Fortentwicklung des Inventars an Abkürzungen. Der Einsatz von \textit{Emoticons} führt Elemente von ikonoischer Sprache in geschriebener Kommunikation ein, indem menschliche Mimik durch verfügbare Symbole dargestellt wird. Dieser kreative Umgang mit Sprache macht Twitter für die Linguistik zu einem interessanten Forschungsfeld, da hier Sprache niedergeschrieben vorgefunden wird, die deutlich von normierter Schriftsprache abweicht.
+
+Diese auch unter dem Terminus Bestätigungsfrage, Vergewisserungsfrage Frageform dient vor allem einer rückwärtsgewandten Funktion, indem eine vorangegangene -eventuell missverstandene- Aussage mit fast identischem Wortmaterial wiederholt und in eine Frage umgewandelt wird um so nähere Erläuterungen zu erfragen. Echofragen sind ein Phänomen gesprochener Sprache. Oftmals werden sie verwendet, um akkustische Verstehensprobleme auszuräumen. Dadurch gewinnt die Echofrage einen rein funktionalen Charakter - auf eine aufwendige Suche nach neuer Lexik wird vom Fragenden verzichtet. Stattdessen wird der Fokus der Nachfrage durch Intonation dargestellt. So ist im Beispiel die Tatsache, dass ein Pilot ein Flugzeug absichtlich zum Absturz bringt so außergewöhnlich, dass der Hörer dies noch einmal bestätigt wissen möchte.
+
+\begin{example}
+Der Pilot hat das Flugzeug absichtlich abstürzen lassen!\\ 
+\textit{Der Pilot hat das Flugzeug ABSICHTLICH abstürzen lassen?}
+\end{example}
+
+Wir nutzen das bereits vorhandene Attribut \texttt{is\_question} der einzelnen Tweets im Korpus, um potentielle Echofragen aufzuspüren. Für sämtliche Fragen ermittelten wir die Tweets, auf die durch die Frage geantwortet wurde. Durch eine einfache Ermittlung der \textit{Kosinus-Ähnlichkeit} bestimmten wir die Ähnlichkeit zwischen Stimulus-Tweet und dem Fragen-Tweet, der sich anschloss. Wir setzten die Schwelle der Kosinus-Ähnlichkeit bewusst hoch, da das Prinzip Echofrage auf großer Textähnlichkeit beruht. Wir wählten eine Kosinus-Ähnlichkeit  $> 0.8$ als Schwellwert.
+
+Die einfachste Methode, auf Twitter eine Echofrage zu stellen, ist das Voranstellen oder Anfügen von Fragezeichen auf einen Initial-Tweet:
+
+\begin{example}
+So langsam kann man bei Hummels dann auch nicht mehr von unabsichtlich sprechen ;-)\\(ID: 329329842296348673)
+
+\textit{????? “@Maverick75HH: So langsam kann man bei Hummels dann auch nicht mehr von unabsichtlich sprechen ;-)”} \\(ID: 329330095368056833)
+\end{example}
+
+\begin{example}
+Ich nenn das jetzt mal "leichten DM-Mitteilungsdrang" :D \\(ID: 322048566749167617)
+
+\textit{“@mussmansein: Ich nenn das jetzt mal "leichten DM-Mitteilungsdrang" :D” ???}\\ (ID: 322048698060255232)
+\end{example}
+
+
+Auffällig ist, dass dabei bewusst die formellen Regeln der Schriftssprache überschritten werden und stattdessen durch -teilweise mehrfache- Duplikation von Satzzeichen der pragmatische Charakter unterstrichen wird. Dabei sind auch Mischungen von Satzzeichen möglich:
+
+\begin{example}
+@ciffi Konstruktivisten nennen es auch gerne assimilieren \#bfas13 \\(ID: 327702706808578048)
+
+\textit{?!? “@gibro: @ciffi Konstruktivisten nennen es auch gerne assimilieren \#bfas13”}\\(ID: 327703517647208448)
+\end{example}
+
+In vielen Fällen geben die User jedoch einen Hinweis auf den Focus ihrer Nachfrage. Im Gegensatz zur gesprochenen Sprache wird hier jedoch nicht Intonation verwendet. Das immer wiederkehrende Muster, dass wir beobachteten war das Voranstellen oder Anfügen der interessierenden lexikalischen Einheit.
+
+\begin{example}
+\#DSDS ist heute mal voll langweilig.\\(ID: 320608166368903169)
+
+\textit{heute? ;D  @Binane1 \#DSDS ist heute mal voll langweilig.}\\ (ID: 320608518434611201)
+\end{example}
+
+\begin{example}
+@FitriNuraini\_  Ich will zum ersten ya spielen :) !!\\ (ID: 327772778302431232)
+
+\textit{spielen? RT @yazzin22: @FitriNuraini\_  Ich will zum ersten ya spielen :) !!}\\ (ID: 327773283502145536)
+\end{example}
+
+Ein Großteil der entdeckten Dialoge kann jedoch nicht als Echofragen identifiziert werden. Sie folgen mehrheitlich dem Muster, den initialen Tweet lediglich zu zitieren und eine neue Frage zum Inhalt zu stellen:
+
+\begin{example}
+Sandmännchen beendet, jetzt die Kinder ins Bett und dann Feierabend bei einem Glas Wein... :-D\\ (ID: 318770276391321600)
+
+\textit{“@WeinKnueller: Sandmännchen beendet, jetzt die Kinder ins Bett und dann Feierabend bei einem Glas Wein... :-D und welchen Wein gibt es ?} \\ (ID: 318772980769501185)
+\end{example}
+
+Echofragen können exemplarisch für die Hybris aus geschriebener und gesprochener Sprache bei Twitter stehen: Die technischen Möglichkeiten versetzen den User in die Lage, ebenso spontan und schnell wie in der gesprochenen Sprache und ohne zusätzliche Kreativität in die Formulierung zu investieren Nachfragen zu stellen und dabei den Focus gezielt zu lenken. Dabei werden Eigenschaften der gesprochenen Sprache wie Intonation ersetzt durch einfache Nennung der interessierenden lexikalischen Einheit. Bestehende formale Regeln werden dabei ignoriert.
+\end{document}
+
+

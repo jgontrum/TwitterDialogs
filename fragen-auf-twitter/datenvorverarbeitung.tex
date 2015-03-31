@@ -1,0 +1,69 @@
+\documentclass[main.tex]{subfiles} 
+\begin{document}
+\section{Daten und Vorverarbeitung}
+
+
+
+\subsection{Generierung der Dialogstrukturen}
+Als Grundlage für die Untersuchungen dient ein Korpus von 20.733.071 deutschen Tweets (exklusive Retweets), die im April 2013 gesammelt wurden. Dieses Korpus wurde mit Hilfe einer deutschen Stoppwortliste durch die Twitter Streaming API generiert und anschließend durch LangID gefiltert, sodass Einträge entfernt wurden, die nicht in deutscher Sprache verfasst wurden.
+
+
+Um Anfragen an dieses Korpus zu vereinfachen, haben wir das komplette Korpus in eine MySQL Datenbank übertragen und in einem mehrstufigen Prozess für jeden Tweet eine Menge von Attributen erstellt. Dabei wurden einige Attribute direkt aus den JSON-Files der Twitter Streaming API ausgelesen, andere durch neuerliche Iterationen erzeugt.
+
+\subsubsection*{Twitter Streaming API}
+
+\begin{itemize}
+\item \texttt{id\_str} -- ID des Tweets 
+\item \texttt{user\_id\_str} -- ID der Users
+\item \texttt{friend\_count} -- Anzahl der Personen, dennen Tweet-Verfassers folgt
+\item \texttt{followers\_count} -- Anzahl der Follower des Tweet-Verfassers
+\item \texttt{in\_reply\_to\_status\_id\_str} -- ID des Tweet auf den aktueller Tweet Antwort ist
+\item \texttt{in\_reply\_to\_user\_id\_str} -- ID des Users des Tweet auf den aktueller Tweet Antwort ist
+\item \texttt{user\_mentions\_count} -- Anzahl der User, die im Tweet erwähnt werden
+\item \texttt{user\_mentions} -- Liste der IDs der User, die im Tweet erwähnt werden
+\item \texttt{created\_at} -- Zeitpunkt des Erstellens des Tweet
+\item \texttt{source} -- von welcher Platform wurde Tweet gesendet (Web, Smartphone)
+\item \texttt{text} -- Textkörper des Tweet
+\end{itemize}
+
+\subsubsection*{nachbearbeitete Attribute}
+\begin{itemize}
+\item \texttt{direct\_replies\_count} -- Anzahl der Tweets, die direkt auf den aktuellen Tweet antworten
+\item \texttt{direct\_replies\_list} -- Liste der Tweets, die direkt auf den aktuellen Tweet antworten
+\item \texttt{indirect\_replies\_count} -- Anzahl der Tweets, die im Dialog-Baum unterhalb des aktuellen Tweet hängen
+\item \texttt{indirect\_replies\_list} -- Eine Liste von allen Antworten, die sich auf diesen Tweet bezogen
+\item \texttt{is\_base\_tweet } -- Root-Tweet eines Dialoges
+\item \texttt{is\_question} -- Tweet ist eine/ keine Frage
+\item \texttt{question\_mark} -- Anzahl der Fragezeichen eines Tweets
+\item \texttt{is\_wh\_question} -- Tweet beginnt mit einem w-Fragewort
+\item \texttt{valid} -- Tweet ist kein Spam. 
+\end{itemize}
+
+Auf Grundlage dieser Informationen war es uns möglich, alle Dialoge in jeweils einem \textit{Dialogbaum} abzubilden, um so Fragen und Antworten zu ermitteln. Dieser Dialogbaum wurde aufgebaut, indem alle Tweets auf ihr Attribut \texttt{in\_reply\_to\_status\_id\_str} hin geprüft wurden und so der Tweet, zu dem der aktuelle Tweet eine Antwort darstellt, mit dem aktuellen verbunden werden konnte.
+
+\subsection{Basistweets}
+Ebenso war es uns möglich, Tweets zu markieren, die einen Dialog starten. Diese Basistweets beziehen sich auf keine anderen Tweets, es gibt jedoch Nachrichten, die auf diese Basistweets antworten. Die Identifizierung setzt jedoch voraus, dass NutzerInnen sich bei einer Antwort direkt auf einen Tweet beziehen und nicht manuell eine Nachricht mit einem @-Handle verfassen. So wurde der Tweet 
+\begin{example}
+@DeigningDiamond -- wenigstens etwas, das ich machen konnte, ohne dass du es auch nur merken konntest. (ID: 318484529570529281)
+\end{example}
+
+von unserem System als Basistweet markiert, betrachtet man aber den Kontext, wird klar, dass er eigentlich Teil einer Diskussion ist. 
+Diese fälschlich markierten Tweets können leider nicht vermieden werden, da es nicht ungewöhnlich ist, einen Dialog mit einem an eine Userin / einen User gerichteten Tweet beginnt: 
+
+\begin{example}
+\textit{Beginn}:     @\_danjl Dein Bild ist richtig scheiße  (ID: 318482949844660224)
+
+\textit{Antwort}:    @chrisgoescross Welches soll ich denn sonst nehmen? (ID: 318483248978219008)
+\end{example} 
+
+
+\subsection{Direkte und indirekte Antworten}
+Eine direkte Antwort ist ein Tweet, der sich direkt auf den Tweet bezieht, auf welchen er mit seinem Attribut \texttt{in\_reply\_to\_status\_id\_str} zeigt, während indirekte Antworten transitiv auch Tweets bezeichnen, die auf eine Nachricht antworten, die wiederum eine Antwort auf den Basistweet ist. Zur schnelleren Analyse haben wir ebenfalls die Anzahl der direkten und indirekten Antworten in die Datenbank mit aufgenommen.
+
+\subsection{Filterung automatisch generierter Tweets}
+Um die statistische Auswertung nicht zu verzerren, haben wir insgesamt 25.736 Tweets entfernt, die eindeutig automatisch generiert wurden. Dazu zählen z.B. Benachrichtigungen aus Videospielen, Musik-Updates oder Foursquare-Mitteilungen. Es wurden alle Tweets als ungültig markiert, die eines der Folgenden Tokens enthalten: '@YouTube', 'Gutschein', '\#4sq', '\#androidgames', '\#nowplaying', '\#np', 'Verkehrsmeldungen' und 'Wetterdaten'. In diesem Fall wurde das Attribut \texttt{valid} auf 0 (false) gesetzt.
+
+
+
+\end{document}
+
