@@ -6,7 +6,9 @@ import MySQLdb
 import MySQLdb.cursors
 import sys
 import cPickle as pickle
-from DialogContainer import DialogContainer
+    
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity  
 
 # <editor-fold desc="SQL Connect">
 # Read in config:
@@ -28,22 +30,14 @@ readCursor = connection.cursor(MySQLdb.cursors.SSCursor)
 
 # </editor-fold>
 
-print "Iterate over the tweet ids and the ids that they reply to. Then integrate this parent-child relation into the dialog structure."
+readCursor.execute("SELECT Replies.text as reply, April2013.text as tweet, Replies.childid, April2013.id FROM April2013, (SELECT `text`, `id` as `childid`,  `in_reply_to_status_id` as `id` FROM April2013 WHERE `valid` = 1 and `direct_replies_count` > 0 and `in_reply_to_status_id` != -1 and `question_mark` = 1 ) AS Replies WHERE April2013.valid = 1 and April2013.question_mark IS NULL and April2013.id = Replies.id")
 
+stats = []
+tfidf_vectorizer = TfidfVectorizer()
 
-readCursor.execute("SELECT id, in_reply_to_status_id FROM " + dbTable + " WHERE direct_replies_count > 0 and in_reply_to_status_id != -1 and valid = 1")
+for reply, tweet, replyid, tweetid in readCursor:
+   tfidf_matrix = tfidf_vectorizer.fit_transform((reply, tweet))
+   stats.append((tweet, reply, tweetid, replyid, cosine_similarity(tfidf_matrix[0:1], tfidf_matrix)))
 
-container = DialogContainer()
-for status_id, reply_to in readCursor:
-    container.add_relation(reply_to, status_id)
-
-print "Now find the root-nodes."
-container.find_roots()
-
-print "Writing to a pickled file."
-pickle.dump(container, open("AllDialogs-DialogContainer.bin","wb"))
-
-
-
-
+pickle.dump(stats, open("EchoScore.pickle", "wb"))
 

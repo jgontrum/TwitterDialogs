@@ -5,6 +5,8 @@ import ConfigParser
 import MySQLdb
 import MySQLdb.cursors
 import sys
+import cPickle as pickle
+    
 # <editor-fold desc="SQL Connect">
 # Read in config:
 config = ConfigParser.RawConfigParser()
@@ -25,17 +27,12 @@ readCursor = connection.cursor(MySQLdb.cursors.SSCursor)
 
 # </editor-fold>
 
-print "Finding dialog initializing questions and how they are answered."
+readCursor.execute("SELECT id, created_at, followers_count, CHAR_LENGTH(text)  FROM " + dbTable + " WHERE indirect_replies_count > 0 and valid = 1")
 
-followers_to_reply_list = {}
+id_to_data = {}
 
-readCursor.execute("SELECT direct_replies_count, indirect_replies_count, created_at, followers_count FROM " + dbTable + " WHERE question_mark = 1 and is_base_tweet = 1 and valid = 1")
+for tweet_id, created_at, followers, length in readCursor:
+    id_to_data[tweet_id] = (created_at, followers, length)
 
-
-for direct_cnt, indirect_cnt, created, follower_cnt in readCursor:
-    followers_to_reply_list.setdefault(follower_cnt / 1000 * 1000, list()).append(indirect_cnt)
-
-print "Output:"
-for follower, list_of_replies in sorted(followers_to_reply_list.iteritems()):
-    print follower, ";", sum(list_of_replies)/float(len(list_of_replies))
+pickle.dump(id_to_data,  open("/tmp/IDtoData.pickle","wb"))
 
