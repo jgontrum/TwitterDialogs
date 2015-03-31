@@ -4,6 +4,7 @@ __author__ = 'Johannes Gontrum <gontrum@vogelschwarm.com>'
 
 import itertools
 
+""" Stores and creates dialog-graphs. The easiest way to use is to add parent-child relations and identify the root-nodes in the end."""
 class DialogContainer:
     def __init__ (self):
         self.index = {}  # stores a list
